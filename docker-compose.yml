@@ -21,7 +21,7 @@ services:
       - "1514:1514/tcp"  # Porta per il ricevimento degli agenti Wazuh
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
     networks:
       - soc-net
     environment:
@@ -32,7 +32,7 @@ services:
       - "9200:9200"  # Porta di accesso a Elasticsearch
 
   logstash:
-    image: docker.elastic.co/logstash/logstash:7.10.2
+    image: docker.elastic.co/logstash/logstash:7.9.3
     networks:
       - soc-net
     volumes:
@@ -41,7 +41,7 @@ services:
       - "5044:5044"  # Porta di Logstash per ricevere i log
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.10.2
+    image: docker.elastic.co/kibana/kibana:7.9.3
     networks:
       - soc-net
     ports:
