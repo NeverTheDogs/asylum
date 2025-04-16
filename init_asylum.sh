@@ -1,18 +1,38 @@
 #!/bin/bash
 
-set -e
+set -eE
 
-# Rollback in caso di errore
+# Modalità debug
+DEBUG=false
+[[ "$1" == "--debug" ]] && DEBUG=true
+
+# Messaggio di avvio
+if $DEBUG; then
+  echo -e "📢 Modalità DEBUG attiva. Verrà mostrato tutto l'output dei comandi."
+else
+  echo -e "📢 Usa '--debug' per mostrare i dettagli in caso di errore."
+fi
+
+# Funzione di esecuzione condizionata
+run() {
+  if $DEBUG; then
+    "$@"
+  else
+    "$@" >/dev/null 2>&1
+  fi
+}
+
+# Rollback in caso di errore o interruzione
 rollback() {
-  echo -e "\n❌ Errore: rollback in corso..."
+  echo -e "\n❌ Errore o interruzione: rollback in corso..."
   docker-compose -f /opt/asylum/docker-compose.yml down || true
   docker network rm asylum_net || true
   rm -rf /opt/asylum
-  echo "Rollback completato."
+  echo "🔁 Rollback completato."
   exit 1
 }
 
-trap rollback ERR
+trap rollback ERR INT
 
 function progress() {
   local message="$1"
@@ -25,15 +45,15 @@ function progress() {
 }
 
 progress "🔧 Verifica/Installazione dipendenze..."
-apt-get update -qq
-apt-get install -y -qq git curl docker.io docker-compose openssl
+run apt-get update -qq
+run apt-get install -y -qq git curl docker.io docker-compose openssl
 
 progress "📁 Preparazione struttura.............."
 mkdir -p /opt/asylum
 cd /opt/asylum
 
 progress "📥 Download docker-compose.yml........."
-curl -fsSL https://raw.githubusercontent.com/NeverTheDogs/asylum/main/docker-compose.yml -o docker-compose.yml
+run curl -fsSL https://raw.githubusercontent.com/NeverTheDogs/asylum/main/docker-compose.yml -o docker-compose.yml
 
 # Controllo variabili
 if ! grep -q "WAZUH_MANAGER_PASSWORD" docker-compose.yml || ! grep -q "WAZUH_API_PASSWORD" docker-compose.yml; then
@@ -42,18 +62,20 @@ if ! grep -q "WAZUH_MANAGER_PASSWORD" docker-compose.yml || ! grep -q "WAZUH_API
 fi
 
 progress "🌐 Creazione rete Docker..............."
-docker network create --driver bridge asylum_net || true
+run docker network create --driver bridge asylum_net || true
 
 progress "🔐 Generazione certificati TLS........."
 mkdir -p certs
-openssl req -x509 -newkey rsa:4096 -sha256 -days 365 -nodes \
+run openssl req -x509 -newkey rsa:4096 -sha256 -days 365 -nodes \
   -keyout certs/key.pem -out certs/cert.pem \
-  -subj "/CN=asylum.local" >/dev/null 2>&1
+  -subj "/CN=asylum.local"
 
 progress "🚀 Avvio stack di sicurezza............"
-docker-compose up -d >/dev/null 2>&1
+run docker-compose up -d
 
 progress "🔍 Verifica servizi attivi............."
-docker ps --format "table {{.Names}}\t{{.Status}}" | grep -E "wazuh|zeek|elasticsearch|thehive|shuffle" >/dev/null || rollback
+if ! docker ps --format "{{.Names}}" | grep -qE "wazuh|zeek|elasticsearch|thehive|shuffle"; then
+  rollback
+fi
 
 echo -e "\n✅ Stack installato correttamente e in esecuzione!"
