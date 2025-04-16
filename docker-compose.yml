@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  zeek:
+    image: zeek/zeek
+    networks:
+      - soc-net
+
+  wazuh-manager:
+    image: wazuh/wazuh
+    networks:
+      - soc-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    networks:
+      - soc-net
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.10.2
+    networks:
+      - soc-net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.2
+    networks:
+      - soc-net
+
+  thehive:
+    image: thehiveproject/thehive
+    networks:
+      - soc-net
+
+  shuffle:
+    image: frikky/shuffle
+    networks:
+      - soc-net
+
+networks:
+  soc-net:
+    driver: bridge
