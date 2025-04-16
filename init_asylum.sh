@@ -44,37 +44,44 @@ function progress() {
   echo " ✅"
 }
 
+# Aggiornamento e installazione dipendenze
 progress "🔧 Verifica/Installazione dipendenze..."
 run apt-get update -qq
 run apt-get install -y -qq git curl docker.io docker-compose openssl
 
+# Creazione della struttura di cartelle
 progress "📁 Preparazione struttura.............."
 mkdir -p /opt/asylum
 cd /opt/asylum
 
+# Download del docker-compose.yml
 progress "📥 Download docker-compose.yml........."
 run curl -fsSL https://raw.githubusercontent.com/NeverTheDogs/asylum/main/docker-compose.yml -o docker-compose.yml
 
-# Controllo variabili
+# Controllo delle variabili di configurazione
 if ! grep -q "WAZUH_MANAGER_PASSWORD" docker-compose.yml || ! grep -q "WAZUH_API_PASSWORD" docker-compose.yml; then
   echo "❌ Le variabili WAZUH_MANAGER_PASSWORD e WAZUH_API_PASSWORD non sono presenti nel file docker-compose.yml!"
   rollback
 fi
 
+# Creazione della rete Docker
 progress "🌐 Creazione rete Docker..............."
 run docker network create --driver bridge asylum_net || true
 
+# Generazione certificati TLS autofirmati
 progress "🔐 Generazione certificati TLS........."
 mkdir -p certs
 run openssl req -x509 -newkey rsa:4096 -sha256 -days 365 -nodes \
   -keyout certs/key.pem -out certs/cert.pem \
   -subj "/CN=asylum.local"
 
+# Avvio dello stack di sicurezza
 progress "🚀 Avvio stack di sicurezza............"
 run docker-compose up -d
 
+# Verifica che i servizi siano attivi
 progress "🔍 Verifica servizi attivi............."
-if ! docker ps --format "{{.Names}}" | grep -qE "wazuh|zeek|elasticsearch|thehive|shuffle"; then
+if ! docker ps --format "{{.Names}}" | grep -qE "wazuh-manager|elasticsearch|logstash|shuffle"; then
   rollback
 fi
 
