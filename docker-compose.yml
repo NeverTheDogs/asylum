@@ -5,64 +5,39 @@ services:
     image: wazuh/wazuh:4.2.5
     network_mode: host  # Usa la rete host per una comunicazione diretta
     environment:
-      - WAZUH_MANAGER_PASSWORD=SuperSecurePassword1  # Password per il manager
-      - WAZUH_API_PASSWORD=AnotherSecurePassword2  # Password per l'API di Wazuh
+      - WAZUH_MANAGER_PASSWORD=SuperSecurePassword1
+      - WAZUH_API_PASSWORD=AnotherSecurePassword2
     volumes:
-      - wazuh-data:/var/ossec/data  # Persistenza dei dati di Wazuh
-      - ./certs:/certs  # Montaggio certificati
-    ports:
-      - "55000:55000"  # Porta di comunicazione Wazuh
-      - "1515:1515/tcp"  # Porta per la comunicazione con l'agente
-      - "1514:1514/tcp"  # Porta per il ricevimento degli agenti Wazuh
-    logging:
-      driver: "json-file"  # Gestione dei log
-      options:
-        max-size: "10m"  # Limita la dimensione dei log
-        max-file: "3"  # Mantieni al massimo 3 file di log
+      - wazuh-data:/var/ossec/data
+      - ./certs:/certs
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.7.0
-    network_mode: host  # Usa la rete host per una comunicazione diretta
+    network_mode: host  # Usa la rete host
     environment:
       - discovery.type=single-node
-      - ELASTICSEARCH_USERNAME=elastic  # Nome utente di Elasticsearch
-      - ELASTICSEARCH_PASSWORD=yourPassword  # Password di Elasticsearch
-      - ELASTICSEARCH_SSL_CERTIFICATE=/certs/cert.pem  # Certificato SSL
-      - ELASTICSEARCH_SSL_KEY=/certs/key.pem  # Certificato chiave
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=yourPassword
+      - ELASTICSEARCH_SSL_CERTIFICATE=/certs/cert.pem
+      - ELASTICSEARCH_SSL_KEY=/certs/key.pem
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
-      - ./certs:/certs  # Montaggio certificati
-    ports:
-      - "9200:9200"  # Porta di accesso a Elasticsearch
-    logging:
-      driver: "json-file"  # Gestione dei log
-      options:
-        max-size: "10m"  # Limita la dimensione dei log
-        max-file: "3"  # Mantieni al massimo 3 file di log
-    ulimits:
-      memlock: -1  # Rimuove i limiti di memoria, utile per Elasticsearch
+      - ./certs:/certs
 
   thehive:
     image: thehiveproject/thehive:latest
-    network_mode: host  # Usa la rete host per una comunicazione diretta
+    network_mode: host  # Usa la rete host
     environment:
-      - SECRET_KEY=SuperSecretKey  # Chiave segreta per TheHive
+      - SECRET_KEY=SuperSecretKey
       - DB_HOST=localhost
       - DB_PORT=9200
-      - DB_USER=elastic  # Nome utente di Elasticsearch
-      - DB_PASSWORD=yourPassword  # Password di Elasticsearch
-      - HTTP_SSL_CERTIFICATE=/certs/cert.pem  # Certificato SSL per TheHive
-      - HTTP_SSL_KEY=/certs/key.pem  # Chiave SSL per TheHive
+      - DB_USER=elastic
+      - DB_PASSWORD=yourPassword
+      - HTTP_SSL_CERTIFICATE=/certs/cert.pem
+      - HTTP_SSL_KEY=/certs/key.pem
     volumes:
       - thehive-data:/data
-      - ./certs:/certs  # Montaggio certificati
-    ports:
-      - "9000:9000"  # Porta per accedere a TheHive
-    logging:
-      driver: "json-file"  # Gestione dei log
-      options:
-        max-size: "10m"  # Limita la dimensione dei log
-        max-file: "3"  # Mantieni al massimo 3 file di log
+      - ./certs:/certs
 
 volumes:
   wazuh-data:
