@@ -45,7 +45,7 @@ services:
     container_name: asylum_elasticsearch
 
   thehive:
-    image: thehiveproject/thehive:latest
+    image: thehiveproject/thehive:4.0.0
     environment:
       - SECRET_KEY=SuperSecretKey
       - DB_HOST=elasticsearch
