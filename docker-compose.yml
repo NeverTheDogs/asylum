@@ -3,8 +3,7 @@ version: '3.8'
 services:
   wazuh-manager:
     image: wazuh/wazuh:4.2.5
-    networks:
-      - soc-net
+    network_mode: host  # Usa la rete host per connettersi direttamente alla rete
     environment:
       - WAZUH_MANAGER_PASSWORD=SuperSecurePassword1
       - WAZUH_API_PASSWORD=AnotherSecurePassword2
@@ -17,8 +16,7 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
-    networks:
-      - soc-net
+    network_mode: host  # Usa la rete host per connettersi direttamente alla rete
     environment:
       - discovery.type=single-node  # Configurazione per eseguire Elasticsearch in modalità singolo nodo
     volumes:
@@ -26,29 +24,21 @@ services:
     ports:
       - "9200:9200"  # Porta di accesso a Elasticsearch
 
-  logstash:
-    image: docker.elastic.co/logstash/logstash:7.9.3
-    networks:
-      - soc-net
-    volumes:
-      - logstash-data:/usr/share/logstash/data  # Persistenza dei dati di Logstash
-    ports:
-      - "5044:5044"  # Porta di Logstash per ricevere i log
+  thehive:
+    image: thehiveproject/thehive:4.1.2
+    network_mode: host  # Usa la rete host per connettersi direttamente alla rete
     environment:
-      - LS_JAVA_OPTS="-Xmx512m -Xms512m"  # Ottimizzazione delle risorse di Logstash (opzionale)
-
-  shuffle:
-    image: ghcr.io/frikky/shuffle:1.2.3
-    networks:
-      - soc-net
+      - SECRET_KEY=SuperSecretKey
+      - DB_HOST=localhost  # Elasticsearch sarà sulla rete host
+      - DB_PORT=9200
+      - DB_USER=elastic
+      - DB_PASSWORD=yourPassword
+    volumes:
+      - thehive-data:/data  # Persistenza dei dati di TheHive
     ports:
-      - "8080:8080"  # Porta per accedere a Shuffle, solo se necessario per automazione
-
-networks:
-  soc-net:
-    driver: bridge
+      - "9000:9000"  # Porta per accedere a TheHive
 
 volumes:
   wazuh-data:
   elasticsearch-data:
-  logstash-data:
+  thehive-data:
