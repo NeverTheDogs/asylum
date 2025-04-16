@@ -17,6 +17,7 @@ services:
       - wazuh-data:/var/ossec/data  # Persistenza dei dati di Wazuh
     ports:
       - "55000:55000"  # Porta di comunicazione Wazuh
+      - "1515:1515/tcp"  # Porta per la comunicazione con l'agente
       - "1514:1514/udp"  # Porta per il ricevimento degli agenti Wazuh
 
   elasticsearch:
