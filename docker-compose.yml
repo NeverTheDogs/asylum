@@ -54,7 +54,7 @@ services:
       - "9000:9000"  # Porta per accedere a TheHive
 
   shuffle:
-    image: frikky/shuffle
+    image: frikky/shuffle:frontend
     networks:
       - soc-net
     ports:
