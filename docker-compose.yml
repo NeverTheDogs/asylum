@@ -38,7 +38,7 @@ services:
       - LS_JAVA_OPTS="-Xmx512m -Xms512m"  # Ottimizzazione delle risorse di Logstash (opzionale)
 
   shuffle:
-    image: ghcr.io/frikky/shuffle:latest
+    image: ghcr.io/frikky/shuffle:v1.2.3
     networks:
       - soc-net
     ports:
