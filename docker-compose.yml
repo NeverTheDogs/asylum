@@ -10,32 +10,61 @@ services:
     image: wazuh/wazuh
     networks:
       - soc-net
+    environment:
+      - WAZUH_MANAGER_PASSWORD=SuperSecurePassword1
+      - WAZUH_API_PASSWORD=AnotherSecurePassword2
+    volumes:
+      - wazuh-data:/var/ossec/data  # Persistenza dei dati di Wazuh
+    ports:
+      - "55000:55000"  # Porta di comunicazione Wazuh
+      - "1514:1514/udp"  # Porta per il ricevimento degli agenti Wazuh
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
     networks:
       - soc-net
+    environment:
+      - discovery.type=single-node  # Configurazione per eseguire Elasticsearch in modalità singolo nodo
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data  # Persistenza dei dati di Elasticsearch
+    ports:
+      - "9200:9200"  # Porta di accesso a Elasticsearch
 
   logstash:
     image: docker.elastic.co/logstash/logstash:7.10.2
     networks:
       - soc-net
+    volumes:
+      - logstash-data:/usr/share/logstash/data  # Persistenza dei dati di Logstash
+    ports:
+      - "5044:5044"  # Porta di Logstash per ricevere i log
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.10.2
     networks:
       - soc-net
+    ports:
+      - "5601:5601"  # Porta per l'accesso a Kibana
 
   thehive:
     image: thehiveproject/thehive
     networks:
       - soc-net
+    ports:
+      - "9000:9000"  # Porta per accedere a TheHive
 
   shuffle:
     image: frikky/shuffle
     networks:
       - soc-net
+    ports:
+      - "8080:8080"  # Porta per accedere a Shuffle
 
 networks:
   soc-net:
     driver: bridge
+
+volumes:
+  wazuh-data:
+  elasticsearch-data:
+  logstash-data:
