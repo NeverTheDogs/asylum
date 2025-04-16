@@ -1,68 +1,76 @@
-version: '3.8'
+version: '3.7'
 
 services:
   wazuh-manager:
-    image: wazuh/wazuh:4.2.5
+    image: wazuh/wazuh
     environment:
-      - WAZUH_MANAGER_PASSWORD=SuperSecurePassword1
-      - WAZUH_API_PASSWORD=AnotherSecurePassword2
+      - WAZUH_MANAGER_PASSWORD=your_wazuh_password
+      - WAZUH_API_PASSWORD=your_api_password
     volumes:
-      - wazuh-data:/var/ossec/data
-      - ./certs:/certs
-    networks:
-      - internal-network
+      - /opt/asylum/certs:/usr/share/elasticsearch/config/certs  # Certificati TLS
+      - asylum_wazuh-data:/var/ossec/data  # Dati di Wazuh
     ports:
-      - "1514:1514"    # Porta Wazuh (TCP)
-      - "55000:55000"  # Porta API di Wazuh (TCP)
+      - "55000:55000"
+    networks:
+      - asylum-net
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.7.0
     environment:
       - discovery.type=single-node
-      - ELASTICSEARCH_USERNAME=elastic
-      - ELASTICSEARCH_PASSWORD=yourPassword
-      - ELASTICSEARCH_SSL_CERTIFICATE=/certs/cert.pem
-      - ELASTICSEARCH_SSL_KEY=/certs/key.pem
-      - ELASTICSEARCH_SSL_KEYSTORE_PASSWORD=yourPassword
+      - ELASTIC_PASSWORD=your_elastic_password
       - xpack.security.enabled=true
       - xpack.security.transport.ssl.enabled=true
       - xpack.security.transport.ssl.verification_mode=certificate
-      - xpack.security.transport.ssl.key=certs/key.pem
-      - xpack.security.transport.ssl.certificate=certs/cert.pem
-      - xpack.security.transport.ssl.certificate_authorities=certs/cert.pem
+      - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certs/key.pem
+      - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certs/cert.pem
+      - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/cert.pem
     volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
-      - ./certs:/certs
-    networks:
-      - internal-network
+      - /opt/asylum/certs:/usr/share/elasticsearch/config/certs  # Certificati TLS
+      - asylum_elasticsearch-data:/usr/share/elasticsearch/data  # Dati di Elasticsearch
     ports:
-      - "9200:9200"    # Porta per Elasticsearch (HTTPS)
-      - "9300:9300"    # Porta per comunicazioni tra nodi Elasticsearch (TCP)
+      - "9200:9200"
+    networks:
+      - asylum-net
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
 
   thehive:
-    image: thehiveproject/thehive:latest
+    image: thehiveproject/thehive
     environment:
-      - SECRET_KEY=SuperSecretKey
-      - DB_HOST=elasticsearch
-      - DB_PORT=9200
-      - DB_USER=elastic
-      - DB_PASSWORD=yourPassword
-      - HTTP_SSL_CERTIFICATE=/certs/cert.pem
-      - HTTP_SSL_KEY=/certs/key.pem
-      - HTTP_LISTENER_ENABLED=true
+      - THEHIVE_PORT=9000
     volumes:
-      - thehive-data:/data
-      - ./certs:/certs
-    networks:
-      - internal-network
+      - /opt/asylum/certs:/etc/thehive/certs  # Certificati TLS
+      - asylum_thehive-data:/data  # Dati di TheHive
     ports:
-      - "9000:9000"    # Porta per TheHive (HTTPS)
+      - "9000:9000"
+    networks:
+      - asylum-net
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
 volumes:
-  wazuh-data:
-  elasticsearch-data:
-  thehive-data:
+  asylum_elasticsearch-data:
+    driver: local
+  asylum_thehive-data:
+    driver: local
+  asylum_wazuh-data:
+    driver: local
 
 networks:
-  internal-network:
+  asylum-net:
     driver: bridge
