@@ -25,7 +25,7 @@ services:
       - "9200:9200"  # Porta di accesso a Elasticsearch
 
   thehive:
-    image: thehiveproject/thehive:4.1.2
+    image: thehiveproject/thehive:4.2.0
     network_mode: host  # Usa la rete host per connettersi direttamente alla rete
     environment:
       - SECRET_KEY=SuperSecretKey
