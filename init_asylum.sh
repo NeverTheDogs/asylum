@@ -26,7 +26,6 @@ run() {
 rollback() {
   echo -e "\n❌ Errore o interruzione: rollback in corso..."
   docker-compose -f /opt/asylum/docker-compose.yml down || true
-  docker network rm asylum_net || true
   rm -rf /opt/asylum
   echo "🔁 Rollback completato."
   exit 1
@@ -64,16 +63,12 @@ if ! grep -q "WAZUH_MANAGER_PASSWORD" docker-compose.yml || ! grep -q "WAZUH_API
   rollback
 fi
 
-# Creazione della rete Docker
-progress "🌐 Creazione rete Docker..............."
-run docker network create --driver bridge asylum_net || true
-
 # Generazione certificati TLS autofirmati
 progress "🔐 Generazione certificati TLS........."
 mkdir -p certs
 run openssl req -x509 -newkey rsa:4096 -sha256 -days 365 -nodes \
   -keyout certs/key.pem -out certs/cert.pem \
-  -subj "/CN=asylum.local"
+  -subj "/CN=localhost"
 
 # Avvio dello stack di sicurezza
 progress "🚀 Avvio stack di sicurezza............"
@@ -81,7 +76,7 @@ run docker-compose up -d
 
 # Verifica che i servizi siano attivi
 progress "🔍 Verifica servizi attivi............."
-if ! docker ps --format "{{.Names}}" | grep -qE "wazuh-manager|elasticsearch|logstash|shuffle"; then
+if ! docker ps --format "{{.Names}}" | grep -qE "wazuh-manager|elasticsearch|thehive"; then
   rollback
 fi
 
