@@ -18,7 +18,7 @@ services:
     container_name: asylum_wazuh-manager
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
     environment:
       - discovery.type=single-node
       - ELASTIC_USERNAME=elastic
@@ -45,7 +45,7 @@ services:
     container_name: asylum_elasticsearch
 
   thehive:
-    image: thehiveproject/thehive:4.0.0
+    image: strangebee/thehive:4.1.23
     environment:
       - SECRET_KEY=SuperSecretKey
       - DB_HOST=elasticsearch
