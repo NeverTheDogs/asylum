@@ -18,7 +18,7 @@ services:
     ports:
       - "55000:55000"  # Porta di comunicazione Wazuh
       - "1515:1515/tcp"  # Porta per la comunicazione con l'agente
-      - "1514:1514/udp"  # Porta per il ricevimento degli agenti Wazuh
+      - "1514:1514/tcp"  # Porta per il ricevimento degli agenti Wazuh
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
