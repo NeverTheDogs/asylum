@@ -7,7 +7,7 @@ services:
       - soc-net
 
   wazuh-manager:
-    image: wazuh/wazuh:4.0
+    image: wazuh/wazuh:4.2.5
     networks:
       - soc-net
     environment:
