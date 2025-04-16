@@ -1,11 +1,6 @@
 version: '3.8'
 
 services:
-  zeek:
-    image: zeek/zeek
-    networks:
-      - soc-net
-
   wazuh-manager:
     image: wazuh/wazuh:4.2.5
     networks:
@@ -39,27 +34,15 @@ services:
       - logstash-data:/usr/share/logstash/data  # Persistenza dei dati di Logstash
     ports:
       - "5044:5044"  # Porta di Logstash per ricevere i log
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.9.3
-    networks:
-      - soc-net
-    ports:
-      - "5601:5601"  # Porta per l'accesso a Kibana
-
-  thehive:
-    image: thehiveproject/thehive
-    networks:
-      - soc-net
-    ports:
-      - "9000:9000"  # Porta per accedere a TheHive
+    environment:
+      - LS_JAVA_OPTS="-Xmx512m -Xms512m"  # Ottimizzazione delle risorse di Logstash (opzionale)
 
   shuffle:
-    image: frikky/shuffle:frontend
+    image: ghcr.io/frikky/shuffle:latest
     networks:
       - soc-net
     ports:
-      - "8080:8080"  # Porta per accedere a Shuffle
+      - "8080:8080"  # Porta per accedere a Shuffle, solo se necessario per automazione
 
 networks:
   soc-net:
