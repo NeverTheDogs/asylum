@@ -35,7 +35,7 @@ services:
       - xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/ca.pem
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
-      - /opt/asylum/certs:/certs
+      - /opt/asylum/certs:/usr/share/elasticsearch/config
     networks:
       - internal-network
     ports:
