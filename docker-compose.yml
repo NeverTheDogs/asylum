@@ -6,9 +6,13 @@ services:
     environment:
       - WAZUH_MANAGER_PASSWORD=SuperSecurePassword1
       - WAZUH_API_PASSWORD=AnotherSecurePassword2
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+      - ELASTICSEARCH_USER=elastic
+      - ELASTICSEARCH_PASSWORD=yourPassword
+      - WAZUH_OUTPUT_ENABLED=yes
     volumes:
       - wazuh-data:/var/ossec/data
-      - /opt/asylum/certs:/certs  # Certificati self-signed
     networks:
       - internal-network
     ports:
