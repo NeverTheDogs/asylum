@@ -39,7 +39,7 @@ services:
       - asylum-net
 
   thehive:
-    image: strangebee/thehive:4.0.2
+    image: thehiveproject/thehive4:4.0.2
     container_name: asylum_thehive
     depends_on:
       - elasticsearch
