@@ -17,8 +17,8 @@ services:
     networks:
       - internal-network
     ports:
-      - "1514:1514"    # Porta Wazuh (TCP)
-      - "55000:55000"  # Porta API di Wazuh (TCP)
+      - "1514:1514"
+      - "55000:55000"
     restart: always
     container_name: asylum_wazuh-manager
 
@@ -32,7 +32,7 @@ services:
     networks:
       - internal-network
     ports:
-      - "9200:9200"    # HTTPS
+      - "9200:9200"
     restart: always
     container_name: asylum_elasticsearch
 
@@ -52,7 +52,7 @@ services:
     networks:
       - internal-network
     ports:
-      - "9000:9000"    # HTTPS
+      - "9000:9000"
     restart: always
     container_name: asylum_thehive
 
