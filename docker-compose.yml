@@ -10,8 +10,7 @@ services:
       - WAZUH_API_PASSWORD=AnotherSecurePassword2
       - ELASTICSEARCH_HOST=elasticsearch
       - ELASTICSEARCH_PORT=9200
-      - ELASTICSEARCH_USER=elastic
-      - ELASTICSEARCH_PASSWORD=yourPassword
+      - ELASTICSEARCH_PROTOCOL=http
       - WAZUH_OUTPUT_ENABLED=yes
     volumes:
       - wazuh-data:/var/ossec/data
