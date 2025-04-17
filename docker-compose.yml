@@ -3,6 +3,8 @@ version: '3.8'
 services:
   wazuh-manager:
     image: wazuh/wazuh:4.2.5
+    depends_on:
+      - elasticsearch
     environment:
       - WAZUH_MANAGER_PASSWORD=SuperSecurePassword1
       - WAZUH_API_PASSWORD=AnotherSecurePassword2
