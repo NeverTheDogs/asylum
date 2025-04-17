@@ -36,6 +36,7 @@ services:
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
       - /opt/asylum/certs:/usr/share/elasticsearch/config
+    command: bash -c "chown -R elasticsearch:elasticsearch /usr/share/elasticsearch/config && elasticsearch"
     networks:
       - internal-network
     ports:
