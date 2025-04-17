@@ -1,78 +1,58 @@
-version: '3.8'
+version: "3.8"
+
+networks:
+  asylum-net:
+    driver: bridge
 
 services:
-  wazuh-manager:
-    image: wazuh/wazuh:4.2.5
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - asylum-net
+
+  wazuh.manager:
+    image: wazuh/wazuh-manager:4.2.5
+    container_name: wazuh-manager
+    restart: unless-stopped
+    ports:
+      - "1514:1514/udp"
+      - "1515:1515"
+    volumes:
+      - wazuh-data:/var/ossec/data
+    networks:
+      - asylum-net
+
+  thehive:
+    image: strangebee/thehive:4.0.2
+    container_name: thehive
     depends_on:
       - elasticsearch
     environment:
-      - WAZUH_MANAGER_PASSWORD=SuperSecurePassword1
-      - WAZUH_API_PASSWORD=AnotherSecurePassword2
-      - ELASTICSEARCH_HOST=elasticsearch
-      - ELASTICSEARCH_PORT=9200
-      - ELASTICSEARCH_PROTOCOL=https
-      - WAZUH_OUTPUT_ENABLED=yes
-    volumes:
-      - wazuh-data:/var/ossec/data
-      - /opt/asylum/certs/cert.pem:/usr/share/wazuh/config/cert.pem
-      - /opt/asylum/certs/key.pem:/usr/share/wazuh/config/key.pem
-      - /opt/asylum/certs/ca.pem:/usr/share/wazuh/config/ca.pem
-    networks:
-      - internal-network
-    ports:
-      - "1514:1514"
-      - "55000:55000"
-    restart: always
-    container_name: asylum_wazuh-manager
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=true
-      - xpack.ssl.enabled=true
-      - xpack.ssl.keystore.path=/usr/share/elasticsearch/config/cert.p12
-      - xpack.ssl.truststore.path=/usr/share/elasticsearch/config/cert.p12
-      - xpack.security.transport.ssl.enabled=true
-      - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/cert.p12
-      - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/cert.p12
-    volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
-      - /opt/asylum/certs/cert.pem:/usr/share/elasticsearch/config/cert.pem
-      - /opt/asylum/certs/key.pem:/usr/share/elasticsearch/config/key.pem
-      - /opt/asylum/certs/ca.pem:/usr/share/elasticsearch/config/ca.pem
-    networks:
-      - internal-network
-    ports:
-      - "9200:9200"
-    restart: always
-    container_name: asylum_elasticsearch
-
-  thehive:
-    image: thehiveproject/thehive4:4.0.2
-    environment:
-      - SECRET_KEY=SuperSecretKey
-      - DB_HOST=elasticsearch
-      - DB_PORT=9200
-      - DB_USER=elastic
-      - DB_PASSWORD=yourPassword
-      - HTTP_LISTENER_ENABLED=true
-      - THEHIVE_ADMIN_USER=admin
-      - THEHIVE_ADMIN_PASSWORD=admin
-    volumes:
-      - thehive-data:/data
-    networks:
-      - internal-network
+      - JAVA_OPTS=-Xms512m -Xmx1g
+      - THEHIVE_elasticsearch.cluster-name=hive
+      - THEHIVE_elasticsearch.hostname=elasticsearch
+      - THEHIVE_elasticsearch.index-prefix=hive
+      - THEHIVE_log.console.level=info
     ports:
       - "9000:9000"
-    restart: always
-    container_name: asylum_thehive
+    networks:
+      - asylum-net
 
 volumes:
   wazuh-data:
-  elasticsearch-data:
-  thehive-data:
-
-networks:
-  internal-network:
-    driver: bridge
+  esdata:
