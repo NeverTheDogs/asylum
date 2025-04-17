@@ -10,10 +10,13 @@ services:
       - WAZUH_API_PASSWORD=AnotherSecurePassword2
       - ELASTICSEARCH_HOST=elasticsearch
       - ELASTICSEARCH_PORT=9200
-      - ELASTICSEARCH_PROTOCOL=http
+      - ELASTICSEARCH_PROTOCOL=https
       - WAZUH_OUTPUT_ENABLED=yes
     volumes:
       - wazuh-data:/var/ossec/data
+      - /opt/asylum/certs/cert.pem:/usr/share/wazuh/config/cert.pem
+      - /opt/asylum/certs/key.pem:/usr/share/wazuh/config/key.pem
+      - /opt/asylum/certs/ca.pem:/usr/share/wazuh/config/ca.pem
     networks:
       - internal-network
     ports:
@@ -26,9 +29,15 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false
+      - xpack.security.enabled=true
+      - xpack.ssl.enabled=true
+      - xpack.ssl.keystore.path=/usr/share/elasticsearch/config/cert.p12
+      - xpack.ssl.truststore.path=/usr/share/elasticsearch/config/cert.p12
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
+      - /opt/asylum/certs/cert.pem:/usr/share/elasticsearch/config/cert.pem
+      - /opt/asylum/certs/key.pem:/usr/share/elasticsearch/config/key.pem
+      - /opt/asylum/certs/ca.pem:/usr/share/elasticsearch/config/ca.pem
     networks:
       - internal-network
     ports:
