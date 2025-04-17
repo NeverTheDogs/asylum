@@ -8,12 +8,13 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
-    container_name: elasticsearch
+    container_name: asylum_elasticsearch
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - xpack.security.enabled=false
+    restart: always
     ulimits:
       memlock:
         soft: -1
@@ -26,9 +27,9 @@ services:
       - asylum-net
 
   wazuh.manager:
-    image: wazuh/wazuh-manager:4.2.5
-    container_name: wazuh-manager
-    restart: unless-stopped
+    image: wazuh/wazuh:4.2.5
+    container_name: asylum_wazuh-manager
+    restart: always
     ports:
       - "1514:1514/udp"
       - "1515:1515"
@@ -39,7 +40,7 @@ services:
 
   thehive:
     image: strangebee/thehive:4.0.2
-    container_name: thehive
+    container_name: asylum_thehive
     depends_on:
       - elasticsearch
     environment:
@@ -48,6 +49,7 @@ services:
       - THEHIVE_elasticsearch.hostname=elasticsearch
       - THEHIVE_elasticsearch.index-prefix=hive
       - THEHIVE_log.console.level=info
+    restart: always
     ports:
       - "9000:9000"
     networks:
