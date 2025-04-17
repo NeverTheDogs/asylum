@@ -42,6 +42,8 @@ services:
       - HTTP_SSL_CERTIFICATE=/certs/cert.pem
       - HTTP_SSL_KEY=/certs/key.pem
       - HTTP_LISTENER_ENABLED=true
+      - THEHIVE_ADMIN_USER=admin@thehive.local
+      - THEHIVE_ADMIN_PASSWORD=changeme123
     volumes:
       - thehive-data:/data
       - /opt/asylum/certs:/certs
