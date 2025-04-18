@@ -272,6 +272,33 @@ restart_with_ssl() {
   docker-compose up -d || rollback
 }
 
+# Aggiorna il file filebeat.yml: copia dal container, sostituisce la stringa degli host,
+# inserisce la direttiva per disabilitare la verifica del certificato,
+# reinvia il file, riavvia il container e cancella il file locale
+update_filebeat_config() {
+  log_step "Copio il file filebeat.yml dal container wazuh all'host e aggiorno la configurazione"
+  
+  # Copia il file filebeat.yml dal container all'host
+  docker cp wazuh:/etc/filebeat/filebeat.yml ./filebeat.yml || { echo "[ERROR] Impossibile copiare filebeat.yml dal container wazuh"; exit 1; }
+  
+
+  sed -i 's|^.*ssl.verification_mode:.*$|  ssl.verification_mode: none|g' ./filebeat.yml || { echo "[ERROR] Impossibile modificare ssl.verification_mode in filebeat.yml"; exit 1; }
+  sed -i "s|^.*username:.*$|  username: 'elastic'|g" ./filebeat.yml || { echo "[ERROR] Impossibile modificare username in filebeat.yml"; exit 1; }
+  sed -i "s|^.*password:.*$|  password: 'elastic'|g" ./filebeat.yml || { echo "[ERROR] Impossibile modificare password in filebeat.yml"; exit 1; }
+  sed -i 's|^.*hosts:.*$|  hosts: ["https://elasticsearch:9200"]|g' ./filebeat.yml || { echo "[ERROR] Impossibile modificare hosts in filebeat.yml"; exit 1; }
+  
+  log_step "filebeat.yml aggiornato nella directory corrente."
+  docker cp ./filebeat.yml wazuh:/etc/filebeat/filebeat.yml || { echo "[ERROR] Impossibile copiare filebeat.yml modificato nel container wazuh"; exit 1; }
+  
+  log_step "filebeat.yml aggiornato reinviato nel container wazuh."
+  
+  docker restart wazuh || { echo "[ERROR] Impossibile riavviare il container wazuh"; exit 1; }
+  log_step "Container wazuh riavviato con la nuova configurazione."
+  rm -f ./filebeat.yml
+  log_step "File filebeat.yml rimosso dal host."
+}
+
+
 # Funzione principale che gestisce l'intero flusso
 main() {
   check_prerequisites
@@ -293,6 +320,9 @@ main() {
 
   # 4. Riavvia i container per applicare la configurazione SSL
   restart_with_ssl || rollback
+  
+  # 5. Copia, aggiorna, reinvia il file filebeat.yml e riavvia il container wazuh
+  update_filebeat_config || rollback
 
   log_step "Setup completato con successo!"
 }
